@@ -31,6 +31,9 @@
  * CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
+
+console.log('xhr-polyfill.js file ran');
+
 'use strict';
 (function ()
 {
@@ -172,16 +175,16 @@
 
   FileHandler.prototype._isTraceLoggingEnabled = function ()
   {
-    return this._config["NativeXHRLogging"] === "full"; 
+    return this._config["NativeXHRLogging"] === "full";
   };
-  
+
   FileHandler._presend = function (reqContext)
   {
     reqContext.dispatchReadyStateChangeEvent(1);  // OPEN
     reqContext.dispatchProgressEvent("loadstart");
     // no upload events for a GET
   };
-  
+
   FileHandler._error = function (reqContext, e)
   {
     if (this._isTraceLoggingEnabled())
@@ -226,10 +229,10 @@
   };
 
   FileHandler.prototype.send = function ()
-  {    
+  {
     var reqContext = this._reqContext;
     var rspTypeHandler = FileHandler.getHandlerForResponseType(reqContext);
-    
+
     if (this._isTraceLoggingEnabled())
       console.log("xhr-polyfill.js - native file XHR Request:\n%o", reqContext.url);
 
@@ -319,14 +322,14 @@
           var body = reqContext.requestData;
           var promise = new Promise(function (resolve, reject)
           {
-            var contentType = reqContext.requestHeaders["content-type"]; 
-            
+            var contentType = reqContext.requestHeaders["content-type"];
+
             // FormData polyfill - request the body and context-type
             body.__getRequestParts().then(function (parts)
             {
               if (!contentType)
                 reqContext.requestHeaders["content-type"] = parts.contentType;
-              
+
               var reader = new FileReader();
               reader.onload = function ()
               {
@@ -342,7 +345,7 @@
               reader.readAsBinaryString(parts.body);
             });
           });
-          
+
           return promise;
         }
       },
@@ -567,22 +570,22 @@
 
   HttpHandler.prototype._isTraceLoggingEnabled = function ()
   {
-    return this._config["NativeXHRLogging"] === "full";  
+    return this._config["NativeXHRLogging"] === "full";
   };
-  
+
   HttpHandler._resolveUri = function (uri)
   {
     if (uri.indexOf("://") > -1)
       return uri;
-    
+
     var resolver = document.createElement("a");
     document.body.appendChild(resolver);
     resolver.href = uri;
-    var absoluteUri = resolver.href; 
+    var absoluteUri = resolver.href;
     resolver.parentNode.removeChild(resolver);
     return absoluteUri;
   };
-  
+
   HttpHandler.prototype.send = function ()
   {
     var reqContext = this._reqContext;
@@ -608,7 +611,7 @@
         url: HttpHandler._resolveUri(reqContext.url), method: reqContext.method,
         headers: reqContext.requestHeaders,
         body: bodyAsBase64String, timeout: timeoutInSecs};
-      
+
       if (this._isTraceLoggingEnabled())
         console.log("xhr-polyfill.js - native XHR Request:\n %o", reqPayLoad);
 
@@ -699,10 +702,10 @@
   HttpHandler.prototype.load = function (payload)
   {
     var reqContext = this._reqContext;
-    
+
     if (this._isTraceLoggingEnabled())
       console.log("xhr-polyfill.js - native XHR Response:\n%o", payload);
-    
+
     if (payload.error)
       HttpHandler._error(reqContext, payload.error, payload['underlyingErrorCode']);
     else
@@ -834,10 +837,10 @@
 
     var requestData = reqContext.requestData;
     reqContext.requestData = undefined;
-    
+
     // returns a native FormData from the plugin's polyfill
     if (FormData.prototype.isPrototypeOf(requestData))
-      requestData = requestData.__getNative();  
+      requestData = requestData.__getNative();
 
     delegate.send(requestData);
   };
@@ -865,7 +868,7 @@
 
         function error()
         {
-          HandlerFactory._config = {"InterceptRemoteRequests": "secureOnly", 
+          HandlerFactory._config = {"InterceptRemoteRequests": "secureOnly",
             "NativeXHRLogging": "none"};
           done(HandlerFactory._config);
         }
@@ -877,7 +880,7 @@
 
     return promise;
   };
-  
+
   HandlerFactory.getHandler = function (context)
   {
     var promise = new Promise(function (resolve)
@@ -888,6 +891,8 @@
 
         if (context.interceptRemoteRequests)           // backdoor to override per instance
           interceptRemoteRequests = context.interceptRemoteRequests;
+
+        console.log('InterceptRemoteRequests config value: ' + interceptRemoteRequests);
 
         if ("GET" === context.method && typeof context.url === "string" &&
           ((context.url.indexOf("://") === -1 && window.location.protocol === "file:") ||
@@ -1235,7 +1240,7 @@
   /**
    * Override plugin config settings per request instance for the "InterceptRemoteRequests"
    * config param.
-   * 
+   *
    * @param {string} value enumerations are: "all", "secureOnly", "none".
    */
   window.XMLHttpRequest.prototype.__setInterceptRemoteRequests = function (value)

@@ -1,6 +1,9 @@
 (function(self) {
   'use strict';
 
+  console.log('in fetch file');
+  console.log(Object.keys(self));
+
   if (self.fetch) {
     return
   }
@@ -417,9 +420,10 @@
   self.Response = Response
 
   self.fetch = function(input, init) {
+    console.log('whatwg-fetch called');
     return new Promise(function(resolve, reject) {
       var request = new Request(input, init)
-      var xhr = new XMLHttpRequest()
+      var xhr = new window.XMLHttpRequest()
 
       xhr.onload = function() {
         var options = {
